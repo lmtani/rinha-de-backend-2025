@@ -1,0 +1,37 @@
+package port
+
+import (
+	"context"
+
+	"github.com/lmtani/rinha-de-backend-2025/internal/domain"
+)
+
+// PaymentRepository defines the interface for payment statistics storage
+type PaymentRepository interface {
+	Add(channel domain.ProcessorChannel, amount float64) error
+	GetSummary() (domain.PaymentsSummary, error)
+}
+
+// PaymentProcessor defines the interface for external payment processors
+type PaymentProcessor interface {
+	ProcessPayment(ctx context.Context, payment domain.Payment) error
+}
+
+// PaymentQueue defines the interface for payment message queue
+type PaymentQueue interface {
+	Send(payment domain.Payment) error
+	Receive() <-chan domain.Payment
+	Close() error
+}
+
+// CircuitBreaker defines the interface for circuit breaker functionality
+type CircuitBreaker interface {
+	Execute(func() error) error
+	State() string
+}
+
+// InMemoryStore defines the interface for in-memory UUID storage
+type InMemoryStore interface {
+	Add(uuid string) error
+	Exists(uuid string) bool
+}
