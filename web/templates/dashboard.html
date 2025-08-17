@@ -1,57 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark light">
     <title>Payment Processor Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/admin.css" rel="stylesheet">
-    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
-    <style>
-        .processor-card {
-            border-left: 4px solid #007bff;
-        }
-        .status-ok {
-            color: #28a745;
-        }
-        .status-error {
-            color: #dc3545;
-        }
-        .result-area {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            padding: 1rem;
-            margin-top: 1rem;
-            min-height: 50px;
-        }
-    </style>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </head>
-<body>
-    <div class="container-fluid">
-        <header class="py-3 mb-4 border-bottom">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h1 class="h3 mb-0">Payment Processor Admin Panel</h1>
-                </div>
-                <div class="col-auto">
-                    <span class="badge bg-secondary">Current Token: {{.Token}}</span>
-                </div>
+<body class="bg-body">
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg border-bottom bg-body-tertiary sticky-top">
+        <div class="container-xxl">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <span class="badge rounded-pill text-bg-primary">PP</span>
+                <span>Payment Processor Admin</span>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge text-bg-secondary text-wrap">Token: {{.Token}}</span>
             </div>
-        </header>
+        </div>
+    </nav>
 
-        <div class="row">
+    <div class="container-xxl my-4">
+        <div class="row g-4">
             <!-- Individual Processor Management -->
             <div class="col-lg-8">
-                <h4 class="mb-3">Individual Processor Management</h4>
-                
+                <h4 class="mb-3">Processors</h4>
+
                 {{range .Processors}}
-                <div class="card processor-card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 text-capitalize">{{.Name}} Processor</h5>
-                        <div>
-                            <span class="badge bg-info">{{.URL}}</span>
-                            <span class="badge {{if eq .Status "OK"}}bg-success{{else}}bg-danger{{end}}">
+                <div class="card text-bg-dark border-secondary shadow-sm mb-4 processor-card">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-secondary-subtle">
+                        <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2">
+                            <span class="processor-accent"></span>
+                            {{.Name}} Processor
+                        </h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge text-bg-info">{{.URL}}</span>
+                            <span class="badge {{if eq .Status "OK"}}text-bg-success{{else}}text-bg-danger{{end}}">
                                 {{.Status}}
                             </span>
                         </div>
@@ -60,43 +47,46 @@
                         <!-- Summary Section -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <h6>Payments Summary</h6>
+                                <h6 class="text-secondary">Payments Summary</h6>
                                 <div class="mb-3">
                                     <div class="row g-2">
                                         <div class="col-md-6">
-                                            <input type="datetime-local" class="form-control form-control-sm" 
+                                            <input type="datetime-local" class="form-control form-control-sm bg-body" 
                                                    id="{{.Name}}-from" placeholder="From (optional)">
                                         </div>
                                         <div class="col-md-6">
-                                            <input type="datetime-local" class="form-control form-control-sm" 
+                                            <input type="datetime-local" class="form-control form-control-sm bg-body" 
                                                    id="{{.Name}}-to" placeholder="To (optional)">
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-primary btn-sm mt-2" 
+                                    <button type="button" class="btn btn-primary btn-sm mt-2"
                                             hx-get="/processor/{{.Name}}/summary"
                                             hx-include="#{{.Name}}-from, #{{.Name}}-to"
-                                            hx-target="#{{.Name}}-summary">
+                                            hx-target="#{{.Name}}-summary"
+                                            hx-indicator=".processor-indicator-{{.Name}}">
                                         Get Summary
                                     </button>
+                                    <span class="htmx-indicator spinner-border spinner-border-sm text-secondary ms-2 processor-indicator-{{.Name}}" role="status"></span>
                                 </div>
-                                <div id="{{.Name}}-summary" class="result-area">
-                                    Click "Get Summary" to load data
+                                <div id="{{.Name}}-summary" class="result-area text-secondary">
+                                    Click "Get Summary" to load data.
                                 </div>
                             </div>
                             
                             <div class="col-md-6">
-                                <h6>Quick Actions</h6>
+                                <h6 class="text-secondary">Quick Actions</h6>
                                 
                                 <!-- Token Configuration -->
                                 <div class="mb-3">
-                                    <label class="form-label">Set Token</label>
+                                    <label class="form-label text-secondary">Set Token</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="text" name="token" class="form-control" 
+                                        <input type="text" name="token" class="form-control bg-body" 
                                                placeholder="New token" id="{{.Name}}-token">
-                                        <button type="button" class="btn btn-outline-secondary"
+                                        <button type="button" class="btn btn-outline-primary"
                                                 hx-post="/processor/{{.Name}}/token"
                                                 hx-include="#{{.Name}}-token"
-                                                hx-target="#{{.Name}}-result">
+                                                hx-target="#{{.Name}}-result"
+                                                hx-indicator=".processor-indicator-{{.Name}}">
                                             Set
                                         </button>
                                     </div>
@@ -104,14 +94,15 @@
                                 
                                 <!-- Delay Configuration -->
                                 <div class="mb-3">
-                                    <label class="form-label">Set Delay (ms)</label>
+                                    <label class="form-label text-secondary">Set Delay (ms)</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="number" name="delay" class="form-control" 
+                                        <input type="number" name="delay" class="form-control bg-body" 
                                                placeholder="Delay in ms" id="{{.Name}}-delay" min="0">
-                                        <button type="button" class="btn btn-outline-secondary"
+                                        <button type="button" class="btn btn-outline-primary"
                                                 hx-post="/processor/{{.Name}}/delay"
                                                 hx-include="#{{.Name}}-delay"
-                                                hx-target="#{{.Name}}-result">
+                                                hx-target="#{{.Name}}-result"
+                                                hx-indicator=".processor-indicator-{{.Name}}">
                                             Set
                                         </button>
                                     </div>
@@ -119,14 +110,15 @@
                                 
                                 <!-- Failure Mode -->
                                 <div class="mb-3">
-                                    <label class="form-label">Failure Mode</label>
+                                    <label class="form-label text-secondary">Failure Mode</label>
                                     <div class="btn-group btn-group-sm d-block" role="group">
                                         <form style="display: inline;">
                                             <input type="hidden" name="failure" value="false">
                                             <button type="button" class="btn btn-outline-success"
                                                     hx-post="/processor/{{.Name}}/failure"
                                                     hx-include="closest form"
-                                                    hx-target="#{{.Name}}-result">
+                                                    hx-target="#{{.Name}}-result"
+                                                    hx-indicator=".processor-indicator-{{.Name}}">
                                                 Disable
                                             </button>
                                         </form>
@@ -135,7 +127,8 @@
                                             <button type="button" class="btn btn-outline-danger"
                                                     hx-post="/processor/{{.Name}}/failure"
                                                     hx-include="closest form"
-                                                    hx-target="#{{.Name}}-result">
+                                                    hx-target="#{{.Name}}-result"
+                                                    hx-indicator=".processor-indicator-{{.Name}}">
                                                 Enable
                                             </button>
                                         </form>
@@ -147,13 +140,14 @@
                                     <button type="button" class="btn btn-warning btn-sm"
                                             hx-post="/processor/{{.Name}}/purge"
                                             hx-target="#{{.Name}}-result"
+                                            hx-indicator=".processor-indicator-{{.Name}}"
                                             hx-confirm="Are you sure you want to purge all payments for {{.Name}}?">
                                         Purge Payments
                                     </button>
                                 </div>
                                 
-                                <div id="{{.Name}}-result" class="result-area">
-                                    Action results will appear here
+                                <div id="{{.Name}}-result" class="result-area text-secondary">
+                                    Action results will appear here.
                                 </div>
                             </div>
                         </div>
@@ -164,37 +158,40 @@
             
             <!-- Global Actions -->
             <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card text-bg-dark border-secondary shadow-sm">
+                    <div class="card-header bg-body-tertiary border-secondary-subtle">
                         <h5 class="mb-0">Global Actions</h5>
-                        <small class="text-muted">Apply to all processors</small>
+                        <small class="text-secondary">Apply to all processors</small>
                     </div>
                     <div class="card-body">
                         <!-- Global Token -->
                         <div class="mb-3">
-                            <label class="form-label">Set Global Token</label>
+                            <label class="form-label text-secondary">Set Global Token</label>
                             <div class="input-group">
-                                <input type="text" name="token" class="form-control" 
+                                <input type="text" name="token" class="form-control bg-body" 
                                        placeholder="New token for all" id="global-token">
                                 <button type="button" class="btn btn-primary"
                                         hx-post="/global/token"
                                         hx-include="#global-token"
-                                        hx-target="#global-result">
+                                        hx-target="#global-result"
+                                        hx-indicator="#global-indicator">
                                     Set All
                                 </button>
+                                <span id="global-indicator" class="htmx-indicator spinner-border spinner-border-sm text-secondary ms-2" role="status"></span>
                             </div>
                         </div>
                         
                         <!-- Global Delay -->
                         <div class="mb-3">
-                            <label class="form-label">Set Global Delay (ms)</label>
+                            <label class="form-label text-secondary">Set Global Delay (ms)</label>
                             <div class="input-group">
-                                <input type="number" name="delay" class="form-control" 
+                                <input type="number" name="delay" class="form-control bg-body" 
                                        placeholder="Delay in ms" id="global-delay" min="0">
                                 <button type="button" class="btn btn-primary"
                                         hx-post="/global/delay"
                                         hx-include="#global-delay"
-                                        hx-target="#global-result">
+                                        hx-target="#global-result"
+                                        hx-indicator="#global-indicator">
                                     Set All
                                 </button>
                             </div>
@@ -202,14 +199,15 @@
                         
                         <!-- Global Failure Mode -->
                         <div class="mb-3">
-                            <label class="form-label">Global Failure Mode</label>
+                            <label class="form-label text-secondary">Global Failure Mode</label>
                             <div class="btn-group d-block" role="group">
                                 <form style="display: inline;">
                                     <input type="hidden" name="failure" value="false">
                                     <button type="button" class="btn btn-outline-success"
                                             hx-post="/global/failure"
                                             hx-include="closest form"
-                                            hx-target="#global-result">
+                                            hx-target="#global-result"
+                                            hx-indicator="#global-indicator">
                                         Disable All
                                     </button>
                                 </form>
@@ -218,7 +216,8 @@
                                     <button type="button" class="btn btn-outline-danger"
                                             hx-post="/global/failure"
                                             hx-include="closest form"
-                                            hx-target="#global-result">
+                                            hx-target="#global-result"
+                                            hx-indicator="#global-indicator">
                                         Enable All
                                     </button>
                                 </form>
@@ -230,24 +229,25 @@
                             <button type="button" class="btn btn-warning w-100"
                                     hx-post="/global/purge"
                                     hx-target="#global-result"
+                                    hx-indicator="#global-indicator"
                                     hx-confirm="Are you sure you want to purge all payments from ALL processors?">
                                 Purge All Payments
                             </button>
                         </div>
                         
-                        <div id="global-result" class="result-area">
-                            Global action results will appear here
+                        <div id="global-result" class="result-area text-secondary">
+                            Global action results will appear here.
                         </div>
                     </div>
                 </div>
                 
                 <!-- Help Card -->
-                <div class="card mt-4">
-                    <div class="card-header">
+                <div class="card text-bg-dark border-secondary shadow-sm mt-4">
+                    <div class="card-header bg-body-tertiary border-secondary-subtle">
                         <h6 class="mb-0">Help</h6>
                     </div>
-                    <div class="card-body">
-                        <ul class="list-unstyled mb-0">
+                    <div class="card-body text-secondary">
+                        <ul class="list-unstyled mb-0 small">
                             <li><strong>Token:</strong> Authentication for admin endpoints</li>
                             <li><strong>Delay:</strong> Artificial delay in payment processing (ms)</li>
                             <li><strong>Failure Mode:</strong> Forces payment endpoint to return errors</li>
@@ -259,6 +259,10 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <footer class="container-xxl py-3 text-center text-secondary small border-top bg-body-tertiary">
+        <span>Admin Dashboard • Powered by Bootstrap & HTMX</span>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

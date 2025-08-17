@@ -10,7 +10,7 @@
 .result-area {
     font-family: 'Courier New', monospace;
     font-size: 0.875rem;
-    white-space: pre-wrap;
+    /* white-space: pre-wrap; */
     max-height: 200px;
     overflow-y: auto;
 }
