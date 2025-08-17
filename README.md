@@ -14,7 +14,8 @@ The system follows clean architecture principles with:
 - **Domain Layer**: Core business logic and entities
 - **Use Case Layer**: Application-specific business rules
 - **Interface Adapters**: Repositories, controllers, etc.
-- **Framework & Drivers**: External frameworks and tools
+- **Framework & Drivers**: External frameworks and tools.
+- **Admin**: Simple utility to manage Payment Processors while developing.
 
 ## Database Setup
 
