@@ -1,0 +1,26 @@
+<div class="summary-data">
+    <h6 class="text-capitalize">{{.Processor}} Processor Summary</h6>
+    <div class="row">
+        <div class="col-6">
+            <div class="d-flex justify-content-between">
+                <span>Total Requests:</span>
+                <strong>{{.Summary.TotalRequests}}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Total Amount:</span>
+                <strong>${{printf "%.2f" .Summary.TotalAmount}}</strong>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="d-flex justify-content-between">
+                <span>Total Fee:</span>
+                <strong>${{printf "%.2f" .Summary.TotalFee}}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Fee/Transaction:</span>
+                <strong>${{printf "%.4f" .Summary.FeePerTransaction}}</strong>
+            </div>
+        </div>
+    </div>
+    <small class="text-muted">Updated: {{.Now}}</small>
+</div>

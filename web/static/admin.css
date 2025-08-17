@@ -1,0 +1,36 @@
+/* Additional custom styles for the admin panel */
+.processor-card {
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.processor-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.result-area {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.summary-data {
+    font-size: 0.875rem;
+}
+
+.summary-data .row > div {
+    margin-bottom: 0.5rem;
+}
+
+/* Loading indicator for HTMX requests */
+.htmx-request {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.htmx-request::after {
+    content: " (loading...)";
+    color: #6c757d;
+    font-style: italic;
+}

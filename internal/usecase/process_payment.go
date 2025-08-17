@@ -88,8 +88,6 @@ func (uc *ProcessPaymentsUseCase) startWorker(ctx context.Context, paymentChan <
 				return
 			}
 
-			fmt.Printf("[%s] Processing payment: %s\n", workerID, payment.CorrelationId)
-
 			// Process payment with timeout
 			processingCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 			err := uc.processorService.ProcessPayment(processingCtx, payment)
