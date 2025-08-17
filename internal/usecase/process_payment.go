@@ -91,6 +91,10 @@ func (uc *ProcessPaymentsUseCase) startWorker(ctx context.Context, paymentChan <
 
 			if err != nil {
 				fmt.Printf("[%s] Failed to process payment %s: %v\n", workerID, payment.CorrelationId, err)
+				fmt.Printf("[%s] Re-enqueuing payment %s\n", workerID, payment.CorrelationId)
+				// We could add a exponential backoff for retries
+				// But I think we need to connect to a redis tracker of what failed.
+				uc.queue.Send(payment)
 			} else {
 				fmt.Printf("[%s] Successfully processed payment %s\n", workerID, payment.CorrelationId)
 			}

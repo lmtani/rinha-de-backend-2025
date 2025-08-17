@@ -62,11 +62,12 @@ type CircuitBreakerConfig struct {
 func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
-			Port:            getEnv("SERVER_PORT", ":8080"),
-			ReadTimeout:     getDurationEnv("SERVER_READ_TIMEOUT", 5*time.Second),
-			WriteTimeout:    getDurationEnv("SERVER_WRITE_TIMEOUT", 10*time.Second),
-			ShutdownTimeout: getDurationEnv("SERVER_SHUTDOWN_TIMEOUT", 30*time.Second),
-			InstanceID:      getEnv("INSTANCE_ID", "default-instance"),
+			Port:              getEnv("SERVER_PORT", ":8080"),
+			ReadTimeout:       getDurationEnv("SERVER_READ_TIMEOUT", 5*time.Second),
+			WriteTimeout:      getDurationEnv("SERVER_WRITE_TIMEOUT", 10*time.Second),
+			ShutdownTimeout:   getDurationEnv("SERVER_SHUTDOWN_TIMEOUT", 30*time.Second),
+			InstanceID:        getEnv("INSTANCE_ID", "default-instance"),
+			WorkerConcurrency: getIntEnv("WORKER_CONCURRENCY", 4),
 		},
 		Database: DatabaseConfig{
 			ConnectionString: getEnv("DATABASE_URL", "postgres://postgres:postgres@postgres:5432/payments"),
