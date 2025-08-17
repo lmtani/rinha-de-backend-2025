@@ -45,7 +45,7 @@ func (s *PaymentProcessorService) ProcessPayment(ctx context.Context, payment do
 
 	if err == nil {
 		// Success with default processor
-		if err := s.repository.Add(domain.DefaultProcessor, amount); err != nil {
+		if err := s.repository.Add(payment.CorrelationId, domain.DefaultProcessor, amount); err != nil {
 			// Log error but don't fail the payment
 			fmt.Printf("Failed to record payment stats: %v\n", err)
 		}
@@ -58,7 +58,7 @@ func (s *PaymentProcessorService) ProcessPayment(ctx context.Context, payment do
 	}
 
 	// Success with fallback processor
-	if err := s.repository.Add(domain.FallbackProcessor, amount); err != nil {
+	if err := s.repository.Add(payment.CorrelationId, domain.FallbackProcessor, amount); err != nil {
 		// Log error but don't fail the payment
 		fmt.Printf("Failed to record payment stats: %v\n", err)
 	}

@@ -9,7 +9,7 @@ import (
 
 // PaymentRepository defines the interface for payment statistics storage
 type PaymentRepository interface {
-	Add(channel domain.ProcessorChannel, amount float64) error
+	Add(correlationID string, channel domain.ProcessorChannel, amount float64) error
 	GetSummary() (domain.PaymentsSummary, error)
 	// GetSummaryInRange returns the summary filtered by the given time range.
 	// If from or to are nil, the respective bound is ignored.

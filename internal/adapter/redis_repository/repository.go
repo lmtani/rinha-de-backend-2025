@@ -65,6 +65,7 @@ func (q *RedisQueue) Send(payment domain.Payment) error {
 		return fmt.Errorf("failed to serialize payment: %w", err)
 	}
 
+	fmt.Println("RedisQueue received payment:", payment.CorrelationId)
 	// Add to the right of the list (RPUSH)
 	if err := q.client.RPush(ctx, q.queueKey, paymentData).Err(); err != nil {
 		return fmt.Errorf("failed to push payment to queue: %w", err)
@@ -75,7 +76,8 @@ func (q *RedisQueue) Send(payment domain.Payment) error {
 
 // Receive returns a channel that delivers payments from the queue
 func (q *RedisQueue) Receive() <-chan domain.Payment {
-	paymentChan := make(chan domain.Payment)
+	// Use a buffered channel to reduce the chance of timeout
+	paymentChan := make(chan domain.Payment, 100)
 
 	// Start a goroutine that polls Redis for new payments
 	go func() {
@@ -114,7 +116,18 @@ func (q *RedisQueue) Receive() <-chan domain.Payment {
 				continue
 			}
 
-			paymentChan <- payment
+			fmt.Printf("RedisQueue dequeued payment: %s\n", payment.CorrelationId)
+
+			// Use a longer timeout to avoid requeueing unnecessarily
+			select {
+			case paymentChan <- payment:
+				// Successfully sent
+			case <-time.After(5 * time.Second):
+				// Timeout, put the payment back in the queue
+				fmt.Printf("Timed out sending to channel, requeueing payment: %s\n", payment.CorrelationId)
+				payloadBytes, _ := json.Marshal(payment)
+				q.client.RPush(context.Background(), q.queueKey, payloadBytes)
+			}
 		}
 	}()
 
@@ -169,16 +182,19 @@ func (s *RedisStore) Add(uuid string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Check if UUID already exists
-	if s.Exists(uuid) {
+	// Use SetNX (Set if Not eXists) for atomic operation
+	key := uuidPrefix + uuid
+	success, err := s.client.SetNX(ctx, key, 1, s.ttl).Result()
+
+	if err != nil {
+		return fmt.Errorf("failed to store UUID: %w", err)
+	}
+
+	if !success {
 		return fmt.Errorf("UUID %s already exists", uuid)
 	}
 
-	// Store the UUID with value 1 and TTL
-	key := uuidPrefix + uuid
-	if err := s.client.Set(ctx, key, 1, s.ttl).Err(); err != nil {
-		return fmt.Errorf("failed to store UUID: %w", err)
-	}
+	fmt.Println("Received payment in Store:", uuid)
 
 	return nil
 }

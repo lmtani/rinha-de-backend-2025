@@ -42,7 +42,7 @@ func TestPaymentFlow(t *testing.T) {
 	}
 
 	// Add payment to repository for audit test
-	err = repository.Add(domain.DefaultProcessor, 100.50)
+	err = repository.Add(payment.CorrelationId, domain.DefaultProcessor, 100.50)
 	if err != nil {
 		t.Fatalf("Failed to add payment to repository: %v", err)
 	}

@@ -44,13 +44,13 @@ func (r *PostgresRepository) Close() {
 }
 
 // Add records a payment in the specified channel
-func (r *PostgresRepository) Add(channel domain.ProcessorChannel, amount float64) error {
+func (r *PostgresRepository) Add(correlationID string, channel domain.ProcessorChannel, amount float64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	_, err := r.pool.Exec(ctx,
-		"INSERT INTO payments (channel, amount) VALUES ($1, $2)",
-		channel.String(), amount)
+		"INSERT INTO payments (correlation_id, channel, amount) VALUES ($1, $2, $3)",
+		correlationID, channel.String(), amount)
 
 	if err != nil {
 		return fmt.Errorf("failed to insert payment record: %w", err)

@@ -21,9 +21,10 @@ type channelStats struct {
 }
 
 type paymentEvent struct {
-	when    time.Time
-	channel domain.ProcessorChannel
-	amount  float64
+	when          time.Time
+	correlationID string
+	channel       domain.ProcessorChannel
+	amount        float64
 }
 
 // NewInMemoryRepository creates a new in-memory payment repository
@@ -38,7 +39,7 @@ func NewInMemoryRepository() *InMemoryRepository {
 }
 
 // Add records a payment in the specified channel
-func (r *InMemoryRepository) Add(channel domain.ProcessorChannel, amount float64) error {
+func (r *InMemoryRepository) Add(correlationID string, channel domain.ProcessorChannel, amount float64) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -52,7 +53,12 @@ func (r *InMemoryRepository) Add(channel domain.ProcessorChannel, amount float64
 	stats.totalRequests++
 	stats.totalAmount += amount
 	// record event timestamped in UTC to align with API expectations
-	r.events = append(r.events, paymentEvent{when: time.Now().UTC(), channel: channel, amount: amount})
+	r.events = append(r.events, paymentEvent{
+		when:          time.Now().UTC(),
+		correlationID: correlationID,
+		channel:       channel,
+		amount:        amount,
+	})
 	return nil
 }
 
