@@ -2,6 +2,7 @@ package port
 
 import (
 	"context"
+	"time"
 
 	"github.com/lmtani/rinha-de-backend-2025/internal/domain"
 )
@@ -10,6 +11,9 @@ import (
 type PaymentRepository interface {
 	Add(channel domain.ProcessorChannel, amount float64) error
 	GetSummary() (domain.PaymentsSummary, error)
+	// GetSummaryInRange returns the summary filtered by the given time range.
+	// If from or to are nil, the respective bound is ignored.
+	GetSummaryInRange(from, to *time.Time) (domain.PaymentsSummary, error)
 }
 
 // PaymentProcessor defines the interface for external payment processors
@@ -30,8 +34,8 @@ type CircuitBreaker interface {
 	State() string
 }
 
-// InMemoryStore defines the interface for in-memory UUID storage
-type InMemoryStore interface {
+// Store defines the interface for UUID storage
+type Store interface {
 	Add(uuid string) error
 	Exists(uuid string) bool
 }

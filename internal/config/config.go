@@ -10,6 +10,8 @@ import (
 type Config struct {
 	Server    ServerConfig
 	Processor ProcessorConfig
+	Database  DatabaseConfig
+	Redis     RedisConfig
 }
 
 // ServerConfig holds server-specific configuration
@@ -30,6 +32,21 @@ type ProcessorConfig struct {
 	QueueBufferSize int
 }
 
+// DatabaseConfig holds PostgreSQL configuration
+type DatabaseConfig struct {
+	ConnectionString string
+	MaxConnections   int
+	ConnectTimeout   time.Duration
+}
+
+// RedisConfig holds Redis configuration
+type RedisConfig struct {
+	URL      string
+	PoolSize int
+	QueueKey string
+	UuidTTL  time.Duration
+}
+
 // CircuitBreakerConfig holds circuit breaker configuration
 type CircuitBreakerConfig struct {
 	MaxRequests  uint32
@@ -47,6 +64,17 @@ func Load() *Config {
 			ReadTimeout:     getDurationEnv("SERVER_READ_TIMEOUT", 5*time.Second),
 			WriteTimeout:    getDurationEnv("SERVER_WRITE_TIMEOUT", 10*time.Second),
 			ShutdownTimeout: getDurationEnv("SERVER_SHUTDOWN_TIMEOUT", 30*time.Second),
+		},
+		Database: DatabaseConfig{
+			ConnectionString: getEnv("DATABASE_URL", "postgres://postgres:postgres@postgres:5432/payments"),
+			MaxConnections:   getIntEnv("DATABASE_MAX_CONNECTIONS", 10),
+			ConnectTimeout:   getDurationEnv("DATABASE_CONNECT_TIMEOUT", 5*time.Second),
+		},
+		Redis: RedisConfig{
+			URL:      getEnv("REDIS_URL", "redis://redis:6379/0"),
+			PoolSize: getIntEnv("REDIS_POOL_SIZE", 10),
+			QueueKey: getEnv("REDIS_QUEUE_KEY", "payment_queue"),
+			UuidTTL:  getDurationEnv("REDIS_UUID_TTL", 24*time.Hour),
 		},
 		Processor: ProcessorConfig{
 			DefaultURL:      getEnv("PROCESSOR_DEFAULT_URL", "http://payment-processor-default:8080"),

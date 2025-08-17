@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"log"
 
 	"github.com/lmtani/rinha-de-backend-2025/internal/adapter/http_client"
 	"github.com/lmtani/rinha-de-backend-2025/internal/adapter/http_server"
-	"github.com/lmtani/rinha-de-backend-2025/internal/adapter/in_memory_repository"
+	"github.com/lmtani/rinha-de-backend-2025/internal/adapter/postgres_repository"
+	"github.com/lmtani/rinha-de-backend-2025/internal/adapter/redis_repository"
 	"github.com/lmtani/rinha-de-backend-2025/internal/config"
 	"github.com/lmtani/rinha-de-backend-2025/internal/domain/service"
 	"github.com/lmtani/rinha-de-backend-2025/internal/port"
@@ -19,7 +21,7 @@ type Container struct {
 	// Ports/Interfaces
 	Repository        port.PaymentRepository
 	Queue             port.PaymentQueue
-	Store             port.InMemoryStore
+	Store             port.Store
 	DefaultProcessor  port.PaymentProcessor
 	FallbackProcessor port.PaymentProcessor
 	CircuitBreaker    port.CircuitBreaker
@@ -43,10 +45,24 @@ func NewContainer() *Container {
 	// Load configuration
 	c.Config = config.Load()
 
-	// Initialize infrastructure adapters
-	c.Repository = in_memory_repository.NewInMemoryRepository()
-	c.Queue = in_memory_repository.NewInMemoryQueue(c.Config.Processor.QueueBufferSize)
-	c.Store = in_memory_repository.NewInMemoryStore()
+	// Initialize PostgreSQL repository
+	var err error
+	c.Repository, err = postgres_repository.NewPostgresRepository(c.Config.Database.ConnectionString)
+	if err != nil {
+		log.Fatalf("Failed to initialize PostgreSQL repository: %v", err)
+	}
+
+	// Initialize Redis queue
+	c.Queue, err = redis_repository.NewRedisQueue(c.Config.Redis.URL, c.Config.Redis.QueueKey)
+	if err != nil {
+		log.Fatalf("Failed to initialize Redis queue: %v", err)
+	}
+
+	// Initialize Redis store
+	c.Store, err = redis_repository.NewRedisStore(c.Config.Redis.URL, c.Config.Redis.UuidTTL)
+	if err != nil {
+		log.Fatalf("Failed to initialize Redis store: %v", err)
+	}
 
 	// Initialize HTTP clients
 	c.DefaultProcessor = http_client.NewPaymentProcessorClient(
@@ -94,5 +110,29 @@ func (c *Container) Start(ctx context.Context) {
 
 // Stop gracefully stops all services
 func (c *Container) Stop() error {
-	return c.ProcessPaymentsUC.Stop()
+	// First stop the payment processor use case
+	if err := c.ProcessPaymentsUC.Stop(); err != nil {
+		log.Printf("Error stopping payment processor: %v", err)
+	}
+
+	// Close PostgreSQL connection if using postgres repository
+	if pgRepo, ok := c.Repository.(*postgres_repository.PostgresRepository); ok {
+		pgRepo.Close()
+	}
+
+	// Close Redis queue connection
+	if redisQueue, ok := c.Queue.(*redis_repository.RedisQueue); ok {
+		if err := redisQueue.Close(); err != nil {
+			log.Printf("Error closing Redis queue: %v", err)
+		}
+	}
+
+	// Close Redis store connection
+	if redisStore, ok := c.Store.(*redis_repository.RedisStore); ok {
+		if err := redisStore.Close(); err != nil {
+			log.Printf("Error closing Redis store: %v", err)
+		}
+	}
+
+	return nil
 }

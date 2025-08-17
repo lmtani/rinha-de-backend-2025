@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lmtani/rinha-de-backend-2025/internal/domain"
 	"github.com/lmtani/rinha-de-backend-2025/internal/port"
@@ -10,11 +11,11 @@ import (
 // RequestPaymentUseCase handles payment request operations
 type RequestPaymentUseCase struct {
 	queue port.PaymentQueue
-	store port.InMemoryStore
+	store port.Store
 }
 
 // NewRequestPaymentUseCase creates a new request payment use case
-func NewRequestPaymentUseCase(queue port.PaymentQueue, store port.InMemoryStore) *RequestPaymentUseCase {
+func NewRequestPaymentUseCase(queue port.PaymentQueue, store port.Store) *RequestPaymentUseCase {
 	return &RequestPaymentUseCase{
 		queue: queue,
 		store: store,
@@ -28,6 +29,7 @@ func (uc *RequestPaymentUseCase) Execute(ctx context.Context, payment domain.Pay
 	}
 
 	if err := uc.store.Add(payment.CorrelationId); err != nil {
+		fmt.Println("Failed to add payment to store:", err)
 		return err
 	}
 	return uc.queue.Send(payment)

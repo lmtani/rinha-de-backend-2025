@@ -48,7 +48,7 @@ func TestPaymentFlow(t *testing.T) {
 	}
 
 	// Test audit
-	summary, err := auditUC.Execute(ctx)
+	summary, err := auditUC.Execute(ctx, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to execute audit: %v", err)
 	}

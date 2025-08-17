@@ -3,6 +3,7 @@ package http_server
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lmtani/rinha-de-backend-2025/internal/config"
@@ -75,7 +76,32 @@ func (s *Server) handleRequestPayment(c *gin.Context) {
 }
 
 func (s *Server) handleAuditPayments(c *gin.Context) {
-	summary, err := s.auditPayments.Execute(c.Request.Context())
+	// Optional query params: from, to (ISO 8601 in UTC)
+	var fromPtr *time.Time
+	var toPtr *time.Time
+
+	if fromStr := c.Query("from"); fromStr != "" {
+		// Accept RFC3339 format (e.g., 2020-07-10T12:34:56.000Z)
+		t, err := time.Parse(time.RFC3339, fromStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid 'from' timestamp, expected ISO8601 UTC (RFC3339)"})
+			return
+		}
+		utc := t.UTC()
+		fromPtr = &utc
+	}
+
+	if toStr := c.Query("to"); toStr != "" {
+		t, err := time.Parse(time.RFC3339, toStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid 'to' timestamp, expected ISO8601 UTC (RFC3339)"})
+			return
+		}
+		utc := t.UTC()
+		toPtr = &utc
+	}
+
+	summary, err := s.auditPayments.Execute(c.Request.Context(), fromPtr, toPtr)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
