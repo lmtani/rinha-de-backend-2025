@@ -22,7 +22,6 @@ The PostgreSQL database is automatically initialized when the container starts u
 
 - The `payments` table
 - Required indexes
-- Sample data for testing
 
 ## Components
 
