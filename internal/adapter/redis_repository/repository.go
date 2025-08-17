@@ -65,7 +65,6 @@ func (q *RedisQueue) Send(payment domain.Payment) error {
 		return fmt.Errorf("failed to serialize payment: %w", err)
 	}
 
-	fmt.Println("RedisQueue received payment:", payment.CorrelationId)
 	// Add to the right of the list (RPUSH)
 	if err := q.client.RPush(ctx, q.queueKey, paymentData).Err(); err != nil {
 		return fmt.Errorf("failed to push payment to queue: %w", err)
@@ -115,8 +114,6 @@ func (q *RedisQueue) Receive() <-chan domain.Payment {
 				fmt.Printf("Failed to deserialize payment: %v\n", err)
 				continue
 			}
-
-			fmt.Printf("RedisQueue dequeued payment: %s\n", payment.CorrelationId)
 
 			// Use a longer timeout to avoid requeueing unnecessarily
 			select {
@@ -193,8 +190,6 @@ func (s *RedisStore) Add(uuid string) error {
 	if !success {
 		return fmt.Errorf("UUID %s already exists", uuid)
 	}
-
-	fmt.Println("Received payment in Store:", uuid)
 
 	return nil
 }

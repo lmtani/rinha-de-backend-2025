@@ -16,10 +16,12 @@ type Config struct {
 
 // ServerConfig holds server-specific configuration
 type ServerConfig struct {
-	Port            string
-	ReadTimeout     time.Duration
-	WriteTimeout    time.Duration
-	ShutdownTimeout time.Duration
+	Port              string
+	ReadTimeout       time.Duration
+	WriteTimeout      time.Duration
+	ShutdownTimeout   time.Duration
+	InstanceID        string
+	WorkerConcurrency int
 }
 
 // ProcessorConfig holds payment processor configuration
@@ -64,6 +66,7 @@ func Load() *Config {
 			ReadTimeout:     getDurationEnv("SERVER_READ_TIMEOUT", 5*time.Second),
 			WriteTimeout:    getDurationEnv("SERVER_WRITE_TIMEOUT", 10*time.Second),
 			ShutdownTimeout: getDurationEnv("SERVER_SHUTDOWN_TIMEOUT", 30*time.Second),
+			InstanceID:      getEnv("INSTANCE_ID", "default-instance"),
 		},
 		Database: DatabaseConfig{
 			ConnectionString: getEnv("DATABASE_URL", "postgres://postgres:postgres@postgres:5432/payments"),
@@ -83,9 +86,9 @@ func Load() *Config {
 			MaxRetries:      getIntEnv("PROCESSOR_MAX_RETRIES", 3),
 			QueueBufferSize: getIntEnv("QUEUE_BUFFER_SIZE", 100),
 			CircuitBreaker: CircuitBreakerConfig{
-				MaxRequests:  uint32(getIntEnv("CB_MAX_REQUESTS", 3)),
-				Interval:     getDurationEnv("CB_INTERVAL", 10*time.Second),
-				Timeout:      getDurationEnv("CB_TIMEOUT", 30*time.Second),
+				MaxRequests:  uint32(getIntEnv("CB_MAX_REQUESTS", 30000)), // No need to use half-open limiter
+				Interval:     getDurationEnv("CB_INTERVAL", 10),
+				Timeout:      getDurationEnv("CB_TIMEOUT", 5),
 				FailureRatio: getFloatEnv("CB_FAILURE_RATIO", 0.5),
 				MinRequests:  uint32(getIntEnv("CB_MIN_REQUESTS", 5)),
 			},

@@ -1,10 +1,8 @@
 package http_server
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -69,7 +67,7 @@ func (s *Server) handleRequestPayment(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("[%s] HTTP Request received for payment: %s\n", os.Getenv("INSTANCE_ID"), payment.CorrelationId)
+	// fmt.Printf("[%s] HTTP Request received for payment: %s\n", os.Getenv("INSTANCE_ID"), payment.CorrelationId)
 
 	if err := s.requestPayment.Execute(c.Request.Context(), payment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

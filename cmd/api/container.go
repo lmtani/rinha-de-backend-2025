@@ -95,7 +95,9 @@ func NewContainer() *Container {
 	// Initialize use cases
 	c.RequestPaymentUC = usecase.NewRequestPaymentUseCase(c.Queue, c.Store)
 	c.AuditPaymentsUC = usecase.NewAuditPaymentsUseCase(c.Repository)
-	c.ProcessPaymentsUC = usecase.NewProcessPaymentsUseCase(c.Queue, c.PaymentProcessorService)
+	c.ProcessPaymentsUC = usecase.NewProcessPaymentsUseCase(
+		c.Queue, c.PaymentProcessorService, c.Config.Server.InstanceID, c.Config.Server.WorkerConcurrency,
+	)
 
 	// Initialize HTTP server
 	c.HTTPServer = http_server.NewServer(c.RequestPaymentUC, c.AuditPaymentsUC, &c.Config.Server)

@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
@@ -25,15 +24,12 @@ type ProcessPaymentsUseCase struct {
 func NewProcessPaymentsUseCase(
 	queue port.PaymentQueue,
 	processorService *service.PaymentProcessorService,
+	instanceID string,
+	workerCount int,
 ) *ProcessPaymentsUseCase {
-	// Get instance ID from environment or generate a default
-	instanceID := os.Getenv("INSTANCE_ID")
-	if instanceID == "" {
-		instanceID = "default-instance"
+	if workerCount <= 0 {
+		workerCount = 4 // default worker count
 	}
-
-	// Get worker concurrency from environment or use default
-	workerCount := 4 // default worker count
 
 	return &ProcessPaymentsUseCase{
 		queue:            queue,
