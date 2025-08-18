@@ -2,31 +2,25 @@ package domain
 
 import (
 	"errors"
-	"strconv"
 )
 
 // Payment represents a payment request in the domain
 type Payment struct {
-	CorrelationId string
-	Amount        string
+	CorrelationId string  `json:"correlationId"`
+	Amount        float64 `json:"amount"`
 }
 
 // AmountAsFloat returns the amount as a float64
 func (p Payment) AmountAsFloat() (float64, error) {
-	if p.Amount == "" {
+	if p.Amount == 0 {
 		return 0, errors.New("amount is required")
 	}
 
-	amount, err := strconv.ParseFloat(p.Amount, 64)
-	if err != nil {
-		return 0, errors.New("invalid amount format")
-	}
-
-	if amount <= 0 {
+	if p.Amount <= 0 {
 		return 0, errors.New("amount must be positive")
 	}
 
-	return amount, nil
+	return p.Amount, nil
 }
 
 // Validate validates the payment data

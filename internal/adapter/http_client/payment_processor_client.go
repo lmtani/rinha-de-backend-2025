@@ -31,7 +31,7 @@ func NewPaymentProcessorClient(baseURL string, timeout time.Duration) *PaymentPr
 func (p *PaymentProcessorClient) ProcessPayment(ctx context.Context, payment domain.Payment) error {
 	url := fmt.Sprintf("%s/payments", p.baseURL)
 
-	paymentData := map[string]string{
+	paymentData := map[string]interface{}{
 		"correlationId": payment.CorrelationId,
 		"amount":        payment.Amount,
 	}
